@@ -1,33 +1,56 @@
 require 'torch'
+require 'BillionWords'
+require 'model'
+require 'train'
+
+--require('mobdebug').start()
 
 opt={
-  type='cuda'
-  optimization='SGD'
-  learning_rate=0.1
-  weight_decay=0.1
-  momentum=0.9
-  loss == 'nll'
-  word_embedding_size=50
-  context_size=11
-  hidden_layer_size=1000
-  output_layer_size=0
-  max_epoch=10
+  -- Training hyperparameters
+  type = 'int',
+  optimization = 'SGD',
+  learning_rate = 1e-3,
+  weight_decay = 0.1,
+  momentum = 0.9,
+  batch_size = 1,
+  loss = 'nll ',
+  max_epochs=1,
+
+  -- Data parameters
+  word_embedding_size = 50,
+  context_size = 5,
+  vocab_size = 100,
+
+  -- Model parameters
+  hidden_layer_size = 10,
+  output_layer_size = 100,
+
+  -- Logger
+  save="../log/"
 }
 
-data_loader=DataLoader()
+billionwords_opt={
+  word_map="../data/billionwords/word_map.th7",
+  test_data="../data/billionwords/test_data.th7",
+  valid_data="../data/billionwords/valid_data.th7",
+  train_tiny="../data/billionwords/train_tiny.th7",
+  train_small="../data/billionwords/train_small.th7",
+  train_full="../data/billionwords/train_full.th7",
+  word_tree="../data/billionwords/word_tree1.th7",
+  context_size = 4,
+  sentence_start_id = 793470,
+  sentence_end_id = 793471,
+  sentence_unknown_id = 793469,
+  root_id = 880542
+}
 
-dataset=data_loader.loadData()
+billionwords = BillionWords(billionwords_opt,opt)
 
-opt.output_layer_size=dataset.vocab.size
+dataset = billionwords:loadData()
 
-model=nn.sequential()
-model:add(nn.lookupTable(dataset.vocab.size,opt.word_embedding_size))
-model:add(nn.Reshape(opt.context_size*opt.word_embedding_size))
-model:add(nn.Linear(opt.context_size,opt.hidden_layer_size))
-model:add(nn.Tanh())
-model:add(nn.Linear(opt.hidden_layer_size,dataset.vocab.size))
-model:add(nn.LogSoftMax())
+opt.output_layer_size = #billionwords.word_map
+opt.vocab_size = #billionwords.word_map
 
-criterion = nn.ClassNLLCriterion()
- 
+model,criterion = getModel(opt)
+
 train(model,criterion,dataset,opt)
