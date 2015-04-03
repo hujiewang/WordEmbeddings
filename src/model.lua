@@ -1,4 +1,4 @@
-require 'nn'
+
 
 function getModel(opt)
   
@@ -12,12 +12,11 @@ function getModel(opt)
   
   criterion = nn.ClassNLLCriterion()
   
-  --[[
   if opt.type == 'cuda' then
       -- Moves to CUDA
     model:cuda()
     criterion:cuda()
   end
-  --]]
+  
   return model, criterion
 end

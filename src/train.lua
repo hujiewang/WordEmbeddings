@@ -1,8 +1,4 @@
-require 'torch'
-require 'optim'
-require 'xlua'
-require 'cutorch'
-require 'nn'
+
 --require('mobdebug').start()
 
 function train(model,criterion,dataset,opt)
@@ -37,10 +33,11 @@ function train(model,criterion,dataset,opt)
   for epoch = 1,opt.max_epochs do
     local time = sys.clock()
     --for batch=1,opt.batch_size do
-    for batch=1,1 do
+    for batch=1,math.ceil(dataset:size()/opt.batch_size) do
       -- displays progress
-      xlua.progress(batch,opt.batch_size)
-
+      xlua.progress(batch,math.ceil(dataset:size()/opt.batch_size))
+      collectgarbage()
+      
       local inputs,targets = dataset:getBatch(batch)
 
       local function feval(x)
@@ -54,20 +51,27 @@ function train(model,criterion,dataset,opt)
 
         local cost=0
 
-        for i=1,#inputs do     
-
+        for i=1,(#inputs)[1] do     
+          --targets[i]=3
+          --print(inputs[i])
+          --print(targets[i])
+          --error()
           local output = model:forward(inputs[i])
-          local err = criterion:forward(output,targets[i])
+          --print(output)
+          --print(targets[i])
+          --local err = criterion:forward(output,targets[i])
+          local err = criterion:forward(output,5)
           cost = cost + err
-
-          local df_do=criterion:backward(output,targets[i])
+          --print(err)
+          --local df_do=criterion:backward(output,targets[i])
+          local df_do=criterion:backward(output,5)
           model:backward(inputs[i],df_do)
 
           --confusion:add(output,targets[i])
         end
 
-        gradParameters:div(#input)
-        cost = cost/#inputs
+        gradParameters:div((#inputs)[1])
+        cost = cost/(#inputs)[1]
         return cost,gradParameters
       end
       
@@ -78,14 +82,14 @@ function train(model,criterion,dataset,opt)
     time = sys.clock() - time
     time = time / dataset:size()
     print("==> time to learn 1 sample = " .. (time*1000) .. "ms\n")
-    print("==> mean class accuracy = " .. (confusion.totalValid*100) .."%\n")
+    --print("==> mean class accuracy = " .. (confusion.totalValid*100) .."%\n")
     --print(confusion)
-    trainLogger:add{["% mean class accuracy "]=confusion.totalValid*100}
+    --trainLogger:add{["% mean class accuracy "]=confusion.totalValid*100}
     -- next epoch
-    dataset:shuffle()
+    --dataset:shuffle()
   end
     local model_file=paths.concat(opt.save,"model.net")
-    os.execute('mkdir -p' .. sys.dirname(model_file))
+    --os.execute('mkdir -p' .. sys.dirname(model_file))
     torch.save(model_file,model)
     print("==> Saving model completed!\n")
 

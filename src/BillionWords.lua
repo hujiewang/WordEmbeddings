@@ -1,6 +1,4 @@
-require 'torch'
-require 'xlua'
-require 'DataSet'
+
 --require('mobdebug').start()
 
 do
@@ -54,7 +52,6 @@ do
     assert(self.train_data[self.train_data:size(1)][2] == self.b_opt.sentence_end_id, "train_data should be terminated with sentence_end_id")
     
     for i = 1, self.train_data:size(1) - 1 do
-    --for i = 1, 6 do
       table.insert(cur_sentence, self.train_data[i][2])
       
       local input = {}
@@ -67,7 +64,7 @@ do
       for j = 1, #cur_sentence do
         table.insert(input, cur_sentence[j])
       end
-
+      assert(#input == self.b_opt.context_size)
       table.insert(input_list,input)
       table.insert(target_list,target)
       
@@ -80,16 +77,18 @@ do
         end
       end
     end
-    local dataset=DataSet(torch.IntTensor(input_list),torch.IntTensor(target_list),opt)
+    local dataset=DataSet(torch.Tensor(input_list),torch.Tensor(target_list),opt)
     return dataset
   end
   
   
 end
 
+
 --[[
-Tests
-billionwords_b_opt = {
+--Tests
+
+billionwords_opt = {
   word_map = "../data/billionwords/word_map.th7",
   test_data = "../data/billionwords/test_data.th7",
   valid_data = "../data/billionwords/valid_data.th7",
@@ -97,14 +96,13 @@ billionwords_b_opt = {
   train_small = "../data/billionwords/train_small.th7",
   train_full = "../data/billionwords/train_full.th7",
   word_tree = "../data/billionwords/word_tree1.th7",
-  context_size = 4,
+  context_size = 5,
   sentence_start_id = 793470,
   sentence_end_id = 793471,
   sentence_unknown_id = 793469,
   root_id = 880542
 }
-test = BillionWords(billionwords_b_opt)
+test = BillionWords(billionwords_opt, opt)
 dataset = test:loadData("tiny")
 print(#test.word_map)
 --]]
-
