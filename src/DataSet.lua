@@ -16,16 +16,27 @@ target: Tensor
     self.data_size=input:size(1)
     self.shuffle = torch.randperm(self.data_size)
     self.opt=opt
+    --[[
     if self.opt.type == 'cuda' then
         self.input = self.input:cuda()
     end
+    --]]
   end
 
   function DataSet:getBatch(batch)
     local s=(batch-1)*self.opt.batch_size+1
     local e=math.min(batch*self.opt.batch_size,self.data_size)
-
-    return self.input[{{s,e}}],self.target[{{s,e}}]
+    local inputs=self.input[{{s,e}}]
+    local targets=self.target[{{s,e}}]
+    dataset = {};
+    function dataset:size() return e-s+1 end 
+    for i=1,dataset:size() do
+      local input = inputs[i];  
+      local output = 5;
+          
+      dataset[i] = {input, output}
+    end
+    return dataset,inputs,targets
   end
 
   function DataSet:shuffle()
