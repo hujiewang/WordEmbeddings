@@ -23,7 +23,7 @@ target: Tensor
   end
 
   function DataSet:getBatch(batch)
-    local s=batch*(self.opt.batch_size-1)+1
+    local s=(batch-1)*self.opt.batch_size+1
     local e=math.min(batch*self.opt.batch_size,self.data_size)
 
     --local input_batch={}
