@@ -36,19 +36,6 @@ opt={
   threads =2
 }
 
---[[GPU or CPU]]--
-if opt.type == 'cuda' then
-   require 'cutorch'
-   require 'cunn'
-   print('Global: switching to CUDA')
-else
-  require 'nn'
-end
-
-torch.setnumthreads(opt.threads)
-torch.manualSeed(opt.seed)
-
-
 billionwords_opt={
   word_map="../data/billionwords/word_map.th7",
   test_data="../data/billionwords/test_data.th7",
@@ -63,6 +50,21 @@ billionwords_opt={
   sentence_unknown_id = 793469,
   root_id = 880542
 }
+
+--[[GPU or CPU]]--
+if opt.type == 'cuda' then
+   require 'cutorch'
+   require 'cunn'
+   print('Global: switching to CUDA')
+else
+  require 'nn'
+end
+
+torch.setnumthreads(opt.threads)
+torch.manualSeed(opt.seed)
+
+
+
 
 billionwords = BillionWords(billionwords_opt,opt)
 
