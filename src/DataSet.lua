@@ -16,10 +16,15 @@ target: Tensor
     self.data_size=input:size(1)
     self.shuffle = torch.randperm(self.data_size)
     self.opt=opt
+    print("DataSet: Switching to "..self.opt.type.."\n")
     if self.opt.type == 'cuda' then
-        print("DataSet: Switching to CUDA\n")
         self.input = self.input:cuda()
+    elseif self.opt.type == 'float' then
+        self.input = self.input:float()
+    elseif self.opt.type == 'double' then
+        self.input = self.input:double()
     end
+    
   end
 
   function DataSet:getBatch(batch)
