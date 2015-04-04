@@ -20,12 +20,12 @@ opt={
   max_epochs=1,
 
   -- Data parameters
-  word_embedding_size = 10,
+  word_embedding_size = 50,
   context_size = 3,
   vocab_size,
 
   -- Model parameters
-  hidden_layer_size = 10,
+  hidden_layer_size = 50,
   output_layer_size,
 
   -- Logger
@@ -40,9 +40,11 @@ opt={
 if opt.type == 'cuda' then
    require 'cutorch'
    require 'cunn'
-   print('==> switching to CUDA')
-   torch.setdefaulttensortype('torch.FloatTensor')
+   print('Global: switching to CUDA')
+else
+  require 'nn'
 end
+
 torch.setnumthreads(opt.threads)
 torch.manualSeed(opt.seed)
 
@@ -66,8 +68,8 @@ billionwords = BillionWords(billionwords_opt,opt)
 
 dataset = billionwords:loadData()
 
---opt.output_layer_size = #billionwords.word_map
-opt.output_layer_size = 10
+opt.output_layer_size = #billionwords.word_map
+--opt.output_layer_size = 10
 opt.vocab_size = #billionwords.word_map
 
 model,criterion = getModel(opt)

@@ -59,9 +59,9 @@ function train(model,criterion,dataset,opt)
         for i=1,(#inputs)[1] do     
 
           local output = model:forward(inputs[i])
-          local err = criterion:forward(output,5)
+          local err = criterion:forward(output,targets[i])
           cost = cost + err
-          local df_do=criterion:backward(output,5)
+          local df_do=criterion:backward(output,targets[i])
           model:backward(inputs[i],df_do)
 
           --confusion:add(output,targets[i])
