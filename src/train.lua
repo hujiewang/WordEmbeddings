@@ -29,10 +29,11 @@ function train(model,criterion,dataset,opt)
   else
     error('unknown optimization method')
   end
-  
+  --[[
   trainer = nn.StochasticGradient(model, criterion);
   trainer.learningRate = opt.learning_rate;
   trainer.maxIteration = 1;
+  --]]
   parameters,gradParameters = model:getParameters()
   for epoch = 1,opt.max_epochs do
     local time = sys.clock()
@@ -42,8 +43,7 @@ function train(model,criterion,dataset,opt)
       xlua.progress(batch,math.ceil(dataset:size()/opt.batch_size))
       --collectgarbage()
       
-      local dataset,inputs,targets = dataset:getBatch(batch)
-      trainer:train(dataset)
+      local ds,inputs,targets = dataset:getBatch(batch)
       
       local function feval(x)
         -- get new parameters
@@ -59,9 +59,9 @@ function train(model,criterion,dataset,opt)
         for i=1,(#inputs)[1] do     
 
           local output = model:forward(inputs[i])
-          local err = criterion:forward(output,targets[i])
+          local err = criterion:forward(output,5)
           cost = cost + err
-          local df_do=criterion:backward(output,targets[i])
+          local df_do=criterion:backward(output,5)
           model:backward(inputs[i],df_do)
 
           --confusion:add(output,targets[i])
@@ -71,18 +71,12 @@ function train(model,criterion,dataset,opt)
         cost = cost/(#inputs)[1]
         return cost,gradParameters
       end
-      --[[
-      
-      --optimMethod(feval,parameters,opt.optimState)
-      optim.sgd(feval,parameters,opt.optimState)
-      --]]
+      optimMethod(feval,parameters,opt.optimState)
       
     end
     time = sys.clock() - time
     time = time / dataset:size()
-    print("==> time to learn 1 sample = " .. (time*1000) .. "ms\n")
-    --print("==> mean class accuracy = " .. (confusion.totalValid*100) .."%\n")
-    --print(confusion)
+    print("==> Speed: " .. (dataset:size()*1000/time) .. "/s \n")
     --trainLogger:add{["% mean class accuracy "]=confusion.totalValid*100}
     -- next epoch
     --dataset:shuffle()

@@ -32,8 +32,7 @@ target: Tensor
     function dataset:size() return e-s+1 end 
     for i=1,dataset:size() do
       local input = inputs[i];  
-      local output = 5;
-          
+      local output = targets[i];
       dataset[i] = {input, output}
     end
     return dataset,inputs,targets
