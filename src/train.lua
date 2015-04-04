@@ -33,7 +33,7 @@ function train(model,criterion,dataset,opt)
   trainer = nn.StochasticGradient(model, criterion);
   trainer.learningRate = opt.learning_rate;
   trainer.maxIteration = 1;
-  
+  parameters,gradParameters = model:getParameters()
   for epoch = 1,opt.max_epochs do
     local time = sys.clock()
     --for batch=1,opt.batch_size do
@@ -72,7 +72,7 @@ function train(model,criterion,dataset,opt)
         return cost,gradParameters
       end
       --[[
-      parameters,gradParameters = model:getParameters();
+      
       --optimMethod(feval,parameters,opt.optimState)
       optim.sgd(feval,parameters,opt.optimState)
       --]]
