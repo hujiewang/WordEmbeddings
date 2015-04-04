@@ -77,7 +77,7 @@ do
         end
       end
     end
-    local dataset=DataSet(torch.Tensor(input_list),torch.Tensor(target_list),opt)
+    local dataset=DataSet(torch.FloatTensor(input_list),torch.IntTensor(target_list),opt)
     return dataset
   end
   

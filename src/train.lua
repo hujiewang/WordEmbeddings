@@ -52,18 +52,10 @@ function train(model,criterion,dataset,opt)
         local cost=0
 
         for i=1,(#inputs)[1] do     
-          --targets[i]=3
-          --print(inputs[i])
-          --print(targets[i])
-          --error()
+
           local output = model:forward(inputs[i])
-          --print(output)
-          --print(targets[i])
-          --local err = criterion:forward(output,targets[i])
           local err = criterion:forward(output,5)
           cost = cost + err
-          --print(err)
-          --local df_do=criterion:backward(output,targets[i])
           local df_do=criterion:backward(output,5)
           model:backward(inputs[i],df_do)
 

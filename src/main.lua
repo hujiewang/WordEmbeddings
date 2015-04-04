@@ -15,13 +15,13 @@ opt={
   learning_rate = 1e-3,
   weight_decay = 0.1,
   momentum = 0.9,
-  batch_size = 1,
+  batch_size = 512,
   loss = 'nll ',
   max_epochs=1,
 
   -- Data parameters
   word_embedding_size = 10,
-  context_size = 5,
+  context_size = 3,
   vocab_size,
 
   -- Model parameters
@@ -55,7 +55,7 @@ billionwords_opt={
   train_small="../data/billionwords/train_small.th7",
   train_full="../data/billionwords/train_full.th7",
   word_tree="../data/billionwords/word_tree1.th7",
-  context_size = 5,
+  context_size = 3,
   sentence_start_id = 793470,
   sentence_end_id = 793471,
   sentence_unknown_id = 793469,

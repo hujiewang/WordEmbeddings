@@ -18,21 +18,12 @@ target: Tensor
     self.opt=opt
     if self.opt.type == 'cuda' then
         self.input = self.input:cuda()
-        self.target = self.target:cuda()
     end
   end
 
   function DataSet:getBatch(batch)
     local s=(batch-1)*self.opt.batch_size+1
     local e=math.min(batch*self.opt.batch_size,self.data_size)
-
-    --local input_batch={}
-    --local target_batch={}
-    --for i=s,e do
-      --table.insert(input_batch,self.input[self.shuffle[i]])
-      --table.insert(target_batch,self.target[self.shuffle[i]])
-    --end
-    --return input_batch,target_batch
 
     return self.input[{{s,e}}],self.target[{{s,e}}]
   end
