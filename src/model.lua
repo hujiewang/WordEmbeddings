@@ -1,21 +1,24 @@
 
 
-function getModel(opt)
+function getModel(opt,billionwords)
   
-  model=nn.Sequential()
-  model:add(nn.LookupTable(opt.vocab_size,opt.word_embedding_size))
-  model:add(nn.Reshape(opt.context_size*opt.word_embedding_size))
-  model:add(nn.Linear(opt.context_size*opt.word_embedding_size,opt.hidden_layer_size))
-  model:add(nn.Tanh())
-  model:add(nn.Linear(opt.hidden_layer_size,opt.output_layer_size))
-  model:add(nn.LogSoftMax())
+  model = {}
+  model.mlp = nn.Sequential()
+  model.mlp:add(nn.LookupTable(opt.vocab_size,opt.word_embedding_size))
+  model.mlp:add(nn.Reshape(opt.context_size*opt.word_embedding_size))
+  model.mlp:add(nn.Linear(opt.context_size*opt.word_embedding_size,opt.hidden_layer_size))
+  model.mlp:add(nn.Tanh())
+  model.mlp:add(nn.Linear(opt.hidden_layer_size,opt.output_layer_size))
   
-  criterion = nn.ClassNLLCriterion()
+  model.smt = billionwords:getSoftMaxTreeLayer()
+
+  criterion = nn.TreeNLLCriterion()
   
   if opt.type == 'cuda' then
       -- Moves to CUDA
-    model:cuda()
-    criterion:cuda()
+    model.mlp:cuda()
+    model.smt:cuda()
+    --criterion:cuda()
   end
   
   return model, criterion

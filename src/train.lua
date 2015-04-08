@@ -34,49 +34,78 @@ function train(model,criterion,dataset,opt)
   trainer.learningRate = opt.learning_rate;
   trainer.maxIteration = 1;
   --]]
-  parameters,gradParameters = model:getParameters()
+  para={}
+  para.mlp={}
+  para.smt={}
+  para.mlp.parameters,para.mlp.gradParameters = model.mlp:parameters()
+  para.smt.parameters,para.smt.gradParameters = model.smt:parameters()
+
+  
+  parameters,gradParameters = flattenParameters({para.mlp.parameters,para.smt.parameters},{para.mlp.gradParameters,para.smt.gradParameters})
+ 
   for epoch = 1,opt.max_epochs do
     local time = sys.clock()
     --for batch=1,opt.batch_size do
+    local cost=0
     for batch=1,math.ceil(dataset:size()/opt.batch_size) do
       -- displays progress
       xlua.progress(batch,math.ceil(dataset:size()/opt.batch_size))
-      --collectgarbage()
       
       local ds,inputs,targets = dataset:getBatch(batch)
       
       local function feval(x)
+        
+        --[[
         -- get new parameters
         if x~=parameters then
           parameters:copy(x)
         end
-
+        --]]
+        
+        
         -- reset gradients
         gradParameters:zero()
-
-        local cost=0
-
-        for i=1,(#inputs)[1] do     
-
-          local output = model:forward(inputs[i])
-          local err = criterion:forward(output,targets[i])
-          cost = cost + err
-          local df_do=criterion:backward(output,targets[i])
-          model:backward(inputs[i],df_do)
-
-          --confusion:add(output,targets[i])
+        
+        
+        local mlp_output = model.mlp:forward(inputs)
+        local stm_output = model.smt:forward({mlp_output,targets})
+        
+        -- Note that TreeNLLCriterion is CPU-based, we need to copy data from GPU to CPU
+        stm_output = stm_output:double()
+        local err = criterion:forward(stm_output,targets)
+        
+        local df_do = criterion:backward(stm_output,targets)
+          -- Then we need to copy data from CPU to GPU
+        df_do = df_do:cuda()
+        
+        local smt_grad_input = model.smt:backward({mlp_output,targets},df_do)
+        
+        -- SoftMaxTree backward produces {gradInput, gradTarget}, we only need gradInput
+        smt_grad_input = smt_grad_input[1]
+        model.mlp:backward(inputs,smt_grad_input)
+        
+        --gradParameters:div((#inputs)[1])
+        --cost = cost/(#inputs)[1]
+        cost=cost+err
+        --[[
+        local gotit=false
+        for i=1,(#gradParameters)[1] do
+          if gradParameters[i]~=0 then
+            gotit=true
+          end
         end
-
-        gradParameters:div((#inputs)[1])
-        cost = cost/(#inputs)[1]
-        return cost,gradParameters
+        if not gotit then
+          error("no gotit")
+        end
+        --]]
+        return err,gradParameters
       end
       optimMethod(feval,parameters,opt.optimState)
-      
+
     end
     time = sys.clock() - time
-    time = time / dataset:size()
-    print("==> Speed: " .. (dataset:size()*1000/time) .. "/s \n")
+    print("==> Speed: " .. (dataset:size()/time).. " samples/s \n")
+    print("==> Average cost: " .. (cost/math.ceil(dataset:size()/opt.batch_size)) .. "\n")
     --trainLogger:add{["% mean class accuracy "]=confusion.totalValid*100}
     -- next epoch
     --dataset:shuffle()
