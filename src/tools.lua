@@ -37,19 +37,23 @@ function flattenParameters(parameters,gradParameters)
 
   -- this function flattens arbitrary lists of parameters,
   -- even complex shared ones
-  function flatten(parameters)
+  -- Expected input as {para1,para2,...para_n} where para_i is a table of parameters, 
+  -- even works for duplicated indices
+  function flatten(table_of_tables)
     
     local Tensor
     local empty = true
     
-    if not parameters then
+    if not table_of_tables then
       return torch.Tensor()
     end
     
-    for k,value in pairs(parameters) do
-      Tensor = parameters[k].new
-      empty = false
-      break;
+    for _, parameters in pairs(table_of_tables) do
+      for k,value in pairs(parameters) do
+        Tensor = parameters[k].new
+        empty = false
+        break;
+      end
     end
     
     if empty then
@@ -59,24 +63,27 @@ function flattenParameters(parameters,gradParameters)
 
     local storages = {}
     local nParameters = 0
-    for k,value in pairs(parameters) do
-      local storage = parameters[k]:storage()
-      if not storageInSet(storages, storage) then
-        storages[torch.pointer(storage)] = {storage, nParameters}
-        nParameters = nParameters + storage:size()
+    for _, parameters in pairs(table_of_tables) do
+      for k,value in pairs(parameters) do
+        local storage = parameters[k]:storage()
+        if not storageInSet(storages, storage) then
+          storages[torch.pointer(storage)] = {storage, nParameters}
+          nParameters = nParameters + storage:size()
+        end
       end
     end
 
     local flatParameters = Tensor(nParameters):fill(1)
     local flatStorage = flatParameters:storage()
-
-    for k,value in pairs(parameters) do
-      local storageOffset = storageInSet(storages, parameters[k]:storage())
-      parameters[k]:set(flatStorage,
-        storageOffset + parameters[k]:storageOffset(),
-        parameters[k]:size(),
-        parameters[k]:stride())
-      parameters[k]:zero()
+    for _, parameters in pairs(table_of_tables) do
+      for k,value in pairs(parameters) do
+        local storageOffset = storageInSet(storages, parameters[k]:storage())
+        parameters[k]:set(flatStorage,
+          storageOffset + parameters[k]:storageOffset(),
+          parameters[k]:size(),
+          parameters[k]:stride())
+        parameters[k]:zero()
+      end
     end
 
     local maskParameters=  flatParameters:float():clone()
@@ -84,13 +91,14 @@ function flattenParameters(parameters,gradParameters)
     local nUsedParameters = nParameters - cumSumOfHoles[#cumSumOfHoles]
     local flatUsedParameters = Tensor(nUsedParameters)
     local flatUsedStorage = flatUsedParameters:storage()
-
-    for k,value in pairs(parameters) do
-      local offset = cumSumOfHoles[parameters[k]:storageOffset()]
-      parameters[k]:set(flatUsedStorage,
-        parameters[k]:storageOffset() - offset,
-        parameters[k]:size(),
-        parameters[k]:stride())
+    for _, parameters in pairs(table_of_tables) do
+      for k,value in pairs(parameters) do
+        local offset = cumSumOfHoles[parameters[k]:storageOffset()]
+        parameters[k]:set(flatUsedStorage,
+          parameters[k]:storageOffset() - offset,
+          parameters[k]:size(),
+          parameters[k]:stride())
+      end
     end
 
     for _, storageAndOffset in pairs(storages) do
@@ -135,7 +143,7 @@ b[2]=torch.CudaTensor(3):fill(0)
 b[10]=torch.CudaTensor(2):fill(0)
 b[29]=torch.CudaTensor(1):fill(0)
 
-aa,bb=flattenParameters(a,b)
+--aa,bb=flattenParameters(a,b)
 
 c={}
 c[2]=torch.CudaTensor(3):fill(0)
@@ -146,15 +154,13 @@ d[2]=torch.CudaTensor(3):fill(0)
 d[10]=torch.CudaTensor(2):fill(0)
 d[29]=torch.CudaTensor(1):fill(0)
 
-cc,dd=flattenParameters(c,d)
+--cc,dd=flattenParameters(c,d)
 
-a[2][1]=2000
-d[2][1]=2001
+--a[2][1]=2000
+--d[2][1]=2001
 
-ee,ff=flattenParameters({aa,cc},{bb,dd})
+ee,ff=flattenParameters({a,b},{c,d})
 
 a[2][1]=1999
 d[2][1]=1998
-aa[3]=-3
-dd[4]=-4
-ccc=3
+c[29][1]=-9999
