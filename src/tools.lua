@@ -1,6 +1,6 @@
 require 'torch'
 require 'cutorch'
-require('mobdebug').start()
+--require('mobdebug').start()
 
 function deepcopy(orig)
   local orig_type = type(orig)
@@ -132,35 +132,3 @@ function flattenParameters(parameters,gradParameters)
 end
 
 
--- Tests
-
-a={}
-a[2]=torch.CudaTensor(3):fill(0)
-a[10]=torch.CudaTensor(2):fill(0)
-a[29]=torch.CudaTensor(1):fill(0)
-b={}
-b[2]=torch.CudaTensor(3):fill(0)
-b[10]=torch.CudaTensor(2):fill(0)
-b[29]=torch.CudaTensor(1):fill(0)
-
---aa,bb=flattenParameters(a,b)
-
-c={}
-c[2]=torch.CudaTensor(3):fill(0)
-c[10]=torch.CudaTensor(2):fill(0)
-c[29]=torch.CudaTensor(1):fill(0)
-d={}
-d[2]=torch.CudaTensor(3):fill(0)
-d[10]=torch.CudaTensor(2):fill(0)
-d[29]=torch.CudaTensor(1):fill(0)
-
---cc,dd=flattenParameters(c,d)
-
---a[2][1]=2000
---d[2][1]=2001
-
-ee,ff=flattenParameters({a,b},{c,d})
-
-a[2][1]=1999
-d[2][1]=1998
-c[29][1]=-9999

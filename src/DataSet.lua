@@ -25,9 +25,7 @@ target: Tensor
       self.target=self.target[{{1,math.min(1000,(#self.input)[1])}}]
     end
     
-    
-    self.data_size=input:size(1)
-    self.shuffle = torch.randperm(self.data_size)
+    self.shuffle = torch.randperm((#self.input)[1])
     self.opt=opt
     --print("DataSet: Switching to "..self.opt.type.."\n")
     if self.opt.type == 'cuda' then
@@ -45,7 +43,7 @@ target: Tensor
 
   function DataSet:getBatch(batch)
     local s=(batch-1)*self.opt.batch_size+1
-    local e=math.min(batch*self.opt.batch_size,self.data_size)
+    local e=math.min(batch*self.opt.batch_size,self:size())
     local inputs=self.input[{{s,e}}]
     local targets=self.target[{{s,e}}]
     dataset = {};

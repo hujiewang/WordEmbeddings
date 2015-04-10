@@ -100,26 +100,3 @@ do
     return indices
   end
 end
-
-
---[[
---Tests
-
-billionwords_opt = {
-  word_map = "../data/billionwords/word_map.th7",
-  test_data = "../data/billionwords/test_data.th7",
-  valid_data = "../data/billionwords/valid_data.th7",
-  train_tiny = "../data/billionwords/train_tiny.th7",
-  train_small = "../data/billionwords/train_small.th7",
-  train_full = "../data/billionwords/train_full.th7",
-  word_tree = "../data/billionwords/word_tree1.th7",
-  context_size = 5,
-  sentence_start_id = 793470,
-  sentence_end_id = 793471,
-  sentence_unknown_id = 793469,
-  root_id = 880542
-}
-test = BillionWords(billionwords_opt, opt)
-dataset = test:loadData("tiny")
-print(#test.word_map)
---]]

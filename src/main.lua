@@ -18,18 +18,18 @@ opt={
   learning_rate = 1e-3,
   weight_decay = 0.1,
   momentum = 0.9,
-  batch_size = 100,
+  batch_size = 1024,
   loss = 'nll ',
   max_epochs=1,
 
   -- Data parameters
-  word_embedding_size = 50,
-  context_size = 3,
+  word_embedding_size = 100,
+  context_size = 5,
   vocab_size,
 
   -- Model parameters
-  hidden_layer_size = 50,
-  output_layer_size = 50,
+  hidden_layer_size = 200,
+  output_layer_size = 100,
 
   -- Prediction Parameters
   predict_batch_size = 4096,
@@ -69,16 +69,10 @@ end
 torch.setnumthreads(opt.threads)
 torch.manualSeed(opt.seed)
 
-
-
-
 billionwords = BillionWords(opt)
 
 train_dataset,valid_dataset,test_dataset = billionwords:loadData()
 
--- We are using SoftMaxTree now, so the output size should be 'word_embedding_size'
---opt.output_layer_size = #billionwords.word_map
---opt.output_layer_size = 10
 opt.vocab_size = #billionwords.word_map
 
 model,criterion = getModel(opt,billionwords)
@@ -88,6 +82,8 @@ train(model,criterion,train_dataset,opt)
 
 --Validation
 
-accuracy = predict(model,valid_dataset,billionwords.word_map,opt)
+accuracy = predict(valid_dataset,model,billionwords,opt)
+
+predictSingle({"I","want","to","have","a"},model,billionwords,opt)
 
 print("accuracy(validation): "..accuracy *100 .."%\n")

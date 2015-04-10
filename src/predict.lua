@@ -27,7 +27,7 @@ function predict(dataset,model,billionwords,opt)
     
     local mlp_output = model.mlp:forward(input)
  
-    smt_input[1] = mlp_output:reshape(1,opt.word_embedding_size)
+    smt_input[1] = mlp_output:reshape(1,opt.output_layer_size)
     
     local err = torch.DoubleTensor(#billionwords.word_map)
     for batch=1,math.ceil(#billionwords.word_map/opt.predict_batch_size) do
