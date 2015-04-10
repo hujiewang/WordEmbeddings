@@ -55,7 +55,7 @@ do
         end
       end
     end
-    local dataset=DataSet(torch.FloatTensor(input_list),torch.IntTensor(target_list),opt)
+    local dataset=DataSet(torch.DoubleTensor(input_list),torch.IntTensor(target_list),opt)
     return dataset
   end
   
@@ -73,11 +73,14 @@ do
     self.test_data = self:load(self.opt.test_data)
     self.word_map = self:load(self.opt.word_map)
     self.word_tree = self:load(self.opt.word_tree)
-    
+    self.index_map={}
+    for key,value in pairs(self.word_map) do
+      self.index_map[value]=key
+    end
     -- Generates dataset for training, validation, and testing
-    self.train_dataset=self:generateData(self.train_data,100000)
-    self.valid_dataset=self:generateData(self.valid_data,100000)
-    self.test_dataset=self:generateData(self.test_data,100000)
+    self.train_dataset=self:generateData(self.train_data,1000000)
+    self.valid_dataset=self:generateData(self.valid_data,1000000)
+    self.test_dataset=self:generateData(self.test_data,1000000)
     return self.train_dataset,self.valid_dataset,self.test_dataset
   end
   
@@ -88,6 +91,14 @@ do
       return smt
   end
   
+  function BillionWords:toIndices(list_of_words)
+    --assert(list_of_words ~= nil)
+    indices = {}
+    for i = 1, #list_of_words do
+      indices[i]=self.index_map[list_of_words[i]]
+    end
+    return indices
+  end
 end
 
 
