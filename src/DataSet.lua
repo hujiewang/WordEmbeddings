@@ -10,15 +10,31 @@ input: Tensor
 target: Tensor
 --]]
   function DataSet:__init(input,target,opt)
-    assert(input:size(1)==target:size(1))
+    if target then
+      assert(input:size(1)==target:size(1))
+    end
     self.input=input
     self.target=target
+    if self.input:dim() == 1 then
+      self.input = self.input:reshape(1,self.input:size(1))
+    end
+    
+    -- Reduce data size for testing
+    self.input=self.input[{{1,math.min(1000,(#self.input)[1])}}]
+    if self.target then 
+      self.target=self.target[{{1,math.min(1000,(#self.input)[1])}}]
+    end
+    
+    
     self.data_size=input:size(1)
     self.shuffle = torch.randperm(self.data_size)
     self.opt=opt
-    print("DataSet: Switching to "..self.opt.type.."\n")
+    --print("DataSet: Switching to "..self.opt.type.."\n")
     if self.opt.type == 'cuda' then
         self.input = self.input:cuda()
+        if self.target then
+          self.target = self.target:double():cuda()
+        end
     elseif self.opt.type == 'float' then
         self.input = self.input:float()
     elseif self.opt.type == 'double' then
