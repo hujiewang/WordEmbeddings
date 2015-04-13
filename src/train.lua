@@ -105,8 +105,9 @@ function train(model,criterion,dataset,opt)
         break
       end
     end
+    
     -- next epoch
-    --dataset:shuffle()
+    dataset:shuffleData()
   end
     local model_file=paths.concat(opt.save,"model.net")
     --os.execute('mkdir -p' .. sys.dirname(model_file))

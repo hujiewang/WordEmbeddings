@@ -50,8 +50,8 @@ target: Tensor
     return dataset,inputs,targets
   end
 
-  function DataSet:shuffle()
-    self.shuffle = torch.randperm(self.size())
+  function DataSet:shuffleData()
+    self.shuffle = torch.randperm((#self.input)[1])
   end
   
   function DataSet:size()
