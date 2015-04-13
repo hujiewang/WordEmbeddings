@@ -6,8 +6,8 @@ function predict(dataset,model,billionwords,opt)
   local all_words=torch.IntTensor(#billionwords.word_map);
   all_words:apply(function(x) i = i + 1 return i end)
   local smt_input=torch.DoubleTensor(torch.LongStorage({#billionwords.word_map,opt.word_embedding_size}), torch.LongStorage({0,1}))
-  local predicted_word={}
-  local cost={}
+  local predicted_words = torch.IntTensor(dataset:size(),5)
+  local cost = torch.DoubleTensor(dataset:size(),5)
   if opt.type == 'cuda' then
     all_words = all_words:double():cuda()
     smt_input = smt_input:cuda()
@@ -43,15 +43,25 @@ function predict(dataset,model,billionwords,opt)
       err[{{s,e}}] = criterion:forward(stm_output, cur_word)
     end
     
+    err, indices = torch.sort(err)
     
-    cost[i],predicted_word[i]=torch.min(err,1)
-    if dataset.target and predicted_word[1] == dataset.target[i] then
-      correct = correct + 1
+    -- We select top-5 predictions
+    cost[i] = err[{{1,5}}]:reshape(1,5)
+    predicted_words[i] = indices[{{1,5}}]:reshape(1,5)
+    
+    if dataset.target then
+      for j=1,predicted_words[i]:size(1) do
+        if predicted_words[i][j] == dataset.target[i] then
+          correct = correct + 1
+          break
+        end
+      end
     end
+    
   end
   time = sys.clock() - time
   print("==> Speed: " .. (dataset:size()/time).. " predictions/s \n")
-  return predicted_word,cost,correct/dataset:size()
+  return predicted_words,cost,correct/dataset:size()
 end
 
 --[[
@@ -65,7 +75,10 @@ function predictSingle(list_of_words,model,billionwords,opt)
   assert(list_of_words ~= nil)
   local input = billionwords:toIndices(list_of_words)
   local dataset=DataSet(torch.DoubleTensor(input),nil,opt)
-  local predicted_word, cost, accuracy = predict(dataset,model,billionwords,opt)
-  print("Predicted word index: "..predicted_word[1][1].." Predicted word: "..billionwords.word_map[predicted_word[1][1]].."\n Cost: "..cost[1][1])
+  local predicted_words, cost, accuracy = predict(dataset,model,billionwords,opt)
+  print("Predicted words:")
+  for i=1,predicted_words[1]:size(1) do
+    print("Predicted word: "..billionwords.word_map[predicted_words[1][i]].." Cost: "..cost[1][i].." Index: "..predicted_words[1][i])
+  end
   return predicted_word, cost
 end
