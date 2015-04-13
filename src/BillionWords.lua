@@ -61,7 +61,7 @@ do
       assert(#input == self.opt.context_size)
       table.insert(input_list,input)
       table.insert(target_list,target)
-      if #input_list > max_size then
+      if #input_list >= max_size then
         break
       end
       if #cur_sentence == self.opt.context_size then
