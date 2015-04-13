@@ -78,9 +78,9 @@ do
       self.index_map[value]=key
     end
     -- Generates dataset for training, validation, and testing
-    self.train_dataset=self:generateData(self.train_data,1000000)
-    self.valid_dataset=self:generateData(self.valid_data,1000000)
-    self.test_dataset=self:generateData(self.test_data,1000000)
+    self.train_dataset=self:generateData(self.train_data,self.opt.max_train_size)
+    self.valid_dataset=self:generateData(self.valid_data,self.opt.max_valid_size)
+    self.test_dataset=self:generateData(self.test_data,self.opt.max_test_size)
     return self.train_dataset,self.valid_dataset,self.test_dataset
   end
   

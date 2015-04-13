@@ -26,7 +26,10 @@ opt={
   word_embedding_size = 100,
   context_size = 5,
   vocab_size,
-
+  max_train_size = 1000,
+  max_valid_size = 50,
+  max_test_size = 50,
+  
   -- Model parameters
   hidden_layer_size = 200,
   output_layer_size = 100,
