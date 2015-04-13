@@ -19,12 +19,6 @@ target: Tensor
       self.input = self.input:reshape(1,self.input:size(1))
     end
     
-    -- Reduce data size for testing
-    self.input=self.input[{{1,math.min(1000,(#self.input)[1])}}]
-    if self.target then 
-      self.target=self.target[{{1,math.min(1000,(#self.input)[1])}}]
-    end
-    
     self.shuffle = torch.randperm((#self.input)[1])
     self.opt=opt
     --print("DataSet: Switching to "..self.opt.type.."\n")
@@ -57,7 +51,7 @@ target: Tensor
   end
 
   function DataSet:shuffle()
-    self.shuffle = torch.randperm(self.data_size)
+    self.shuffle = torch.randperm(self.size())
   end
   
   function DataSet:size()
