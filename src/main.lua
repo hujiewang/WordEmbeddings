@@ -12,7 +12,7 @@ require 'xlua'
 --require('mobdebug').start()
 
 opt={
-  -- Training hyperparameters
+  -- Training parameters
   type = 'cuda',
   optimization = 'SGD',
   learning_rate = 1e-3,
@@ -21,13 +21,19 @@ opt={
   batch_size = 1024,
   loss = 'nll ',
   max_epochs=1,
-
+  
+  -- Validation parameters
+  
+  -- We do validation when current #epoch mod valid_time_gap == 0 
+  valid_time_gap = 1,
+  earlyStopping_threshold = 0.1,
+  
   -- Data parameters
   word_embedding_size = 100,
   context_size = 5,
   vocab_size,
   max_train_size = 1000,
-  max_valid_size = 50,
+  max_valid_size = 1,
   max_test_size = 50,
   
   -- Model parameters
