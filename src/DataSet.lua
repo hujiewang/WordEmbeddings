@@ -21,7 +21,7 @@ target: Tensor
     
     self.shuffle = torch.randperm((#self.input)[1])
     self.opt=opt
-    --print("DataSet: Switching to "..self.opt.type.."\n")
+
     if self.opt.type == 'cuda' then
         self.input = self.input:cuda()
         if self.target then

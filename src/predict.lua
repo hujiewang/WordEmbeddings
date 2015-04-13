@@ -16,7 +16,7 @@ function predict(dataset,model,billionwords,opt)
   local time = sys.clock()
   for i = 1,dataset:size() do
     -- displays progress
-    print("data #"..i.." (Total "..dataset:size()..")")
+    print("Sample #"..i.." (Total "..dataset:size()..")")
     --xlua.progress(i,dataset:size())
     local input
     if dataset.input:dim() == 1 then

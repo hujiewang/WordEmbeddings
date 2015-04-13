@@ -6,6 +6,9 @@ function train(model,criterion,dataset,opt)
   
   -- For early stopping
   local last_valid_accuracy = 0.0
+  local accuracy
+  local last_avg_cost = math.huge
+  local avg_cost
   
   if opt.optimization == 'CG' then
     optimState = {
@@ -94,18 +97,25 @@ function train(model,criterion,dataset,opt)
 
     end
     time = sys.clock() - time
-    print("==> Speed: " .. (dataset:size()/time).. " samples/s \n")
-    print("==> Average cost: " .. (cost/math.ceil(dataset:size()/opt.batch_size)) .. "\n")
+    avg_cost = (cost/math.ceil(dataset:size()/opt.batch_size))
+    print("==> Speed: " .. (dataset:size()/time).. " samples/s")
+    print("==> Average cost: " ..avg_cost)
+    print("==> Average cost change: "..(avg_cost-last_avg_cost))
+    print("==> Epoch #"..epoch.." completed (Max number of epochs "..opt.max_epochs..")")
     
     if epoch % opt.valid_time_gap ==0 then
+      print("==> Validating...")
       _,_,accuracy = predict(valid_dataset,model,billionwords,opt)
+      print("==> Validation top-5 class accuracy: " ..accuracy)
       trainLogger:add{["% top-5 class accuracy "]=accuracy}
       if accuracy < last_valid_accuracy and math.abs(accuracy - last_valid_accuracy) >= opt.earlyStopping_threshold then
         print("==> Early Stopper terminated training")
         break
       end
+      last_valid_accuracy = accuracy
     end
-    
+
+    last_avg_cost = avg_cost
     -- next epoch
     dataset:shuffleData()
   end
