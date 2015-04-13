@@ -7,6 +7,24 @@ do
   
   function BillionWords:__init(opt)
     self.opt = opt
+    local data_url = "http://lisaweb.iro.umontreal.ca/transfert/lisa/users/leonardn/billionwords.tar.gz"
+    local data_folder = "../data/billionwords"
+    local data_source_path = "../data/billionwords/billionwords.tar.gz"
+
+    
+    paths.mkdir(data_folder)
+    if not paths.filep(opt.train_tiny) then
+      if not paths.filep(data_source_path) then
+        print('==> Downloading dataset...')
+        do_with_cwd(
+         data_folder, 
+         function() os.execute('wget ' .. data_url) end
+        )
+      end
+      print('==> Decompressing dataset...')
+      os.execute('tar -xvzf ' .. data_source_path .. ' -C ' .. data_folder)
+      print('==> Decompression completed')
+    end
   end
 
   function BillionWords:load(file_path)

@@ -131,4 +131,14 @@ function flattenParameters(parameters,gradParameters)
   return flatParameters, flatGradParameters
 end
 
+-- Temporarily changes the current working directory to call fn, 
+-- returning its result.
+function do_with_cwd(path, fn)
+   local cur_dir = fs.cwd()
+   fs.chdir(path)
+   local res = fn()
+   fs.chdir(cur_dir)
+   return res
+end
+
 
