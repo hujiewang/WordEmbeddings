@@ -116,12 +116,14 @@ function train(model,criterion,dataset,opt)
     end
 
     last_avg_cost = avg_cost
-    -- next epoch
-    dataset:shuffleData()
-  end
     local model_file=paths.concat(opt.save,"model.net")
     --os.execute('mkdir -p' .. sys.dirname(model_file))
     torch.save(model_file,model)
     print("==> Saving model completed!\n")
+    
+    -- next epoch
+    dataset:shuffleData()
+  end
+    
 
 end

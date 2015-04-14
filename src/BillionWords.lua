@@ -77,6 +77,14 @@ do
     return dataset
   end
   
+  function BillionWords:loadWordMap()
+    self.word_map = self:load(self.opt.word_map)
+    self.index_map = {}
+    for key,value in pairs(self.word_map) do
+      self.index_map[value] = key
+    end
+  end
+  
   function BillionWords:loadData(data_size)
     data_size = data_size or "tiny"
     
@@ -89,12 +97,10 @@ do
     end
     self.valid_data = self:load(self.opt.valid_data)
     self.test_data = self:load(self.opt.test_data)
-    self.word_map = self:load(self.opt.word_map)
     self.word_tree = self:load(self.opt.word_tree)
-    self.index_map={}
-    for key,value in pairs(self.word_map) do
-      self.index_map[value]=key
-    end
+    
+    self:loadWordMap()
+    
     -- Generates dataset for training, validation, and testing
     self.train_dataset=self:generateData(self.train_data,self.opt.max_train_size)
     self.valid_dataset=self:generateData(self.valid_data,self.opt.max_valid_size)
