@@ -1,5 +1,6 @@
 require 'torch'
 require 'BillionWords'
+require 'SGD'
 require 'model'
 require 'DataSet'
 require 'tools'
@@ -15,10 +16,10 @@ opt={
   -- Training parameters
   type = 'cuda',
   optimization = 'SGD',
-  learning_rate = 0.1,
-  weight_decay = 0.1,
+  learning_rate = 1e-3,
+  weight_decay = 1e-3,
   momentum = 0.9,
-  batch_size = 8192,
+  batch_size = 24387,
   loss = 'nll ',
   max_epochs=20,
   maxIter = 20,
