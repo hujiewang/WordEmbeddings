@@ -1,3 +1,4 @@
+require 'dp'
 --[[SGD(stochastic gradient descent) class]]
 do
   local SGD = torch.class('SGD')
@@ -8,6 +9,17 @@ do
     self._params = {}
     self._gradParams = {}
     self._scales = {}
+    self._pastGradParams = {}
+    self._updateCounter = 0
+    self._optimState.nesterov = self._optimState.nesterov or false
+    self._optimState.learning_rate_decay = self._optimState.learning_rate_decay or 0
+    self._optimState.learning_rate = self._optimState.learning_rate or 1e-3
+    self._optimState.weight_decay = self._optimState.weight_decay or 0
+    
+    self._optimState.momentum = self._optimState.momentum or 0
+    self._optimState.damp = self._optimState.damp or self._optimState.momentum
+    --print(self._optimState.nesterov,self._optimState.momentum,self._optimState.damp)
+    --assert(not self._optimState.nesterov or (self._optimState.momentum > 0 and self._optimState.damp == 0), "Nesterov momentum requires a momentum and zero dampening")
     local idx = 0
     for i=1,#self._model.modules do
       local param, gradParam, scale, size = self._model.modules[i]:parameters()
@@ -33,15 +45,41 @@ do
   end
   
   function SGD:updateParams()
-    --[[
-    -- weight decay with single or individual parameters
-    if wd ~= 0 then
-      dfdx:add(wd, x)
+    local cur_learning_rate = self._optimState.learning_rate / (1+self._updateCounter * self._optimState.learning_rate_decay)
+    print("learning_rate: "..cur_learning_rate)
+    for k, gradParam in pairs(self._gradParams) do
+      
+      local param = self._params[k]
+      -- the ordering here is important
+      -- weight decay 
+      if self._optimState.weight_decay~=0 then
+        gradParam:add(self._optimState.weight_decay, param)
+      end
+      
+      -- apply momentum
+      if self._optimState.momentum~=0 then
+        local pastGradParam = self._pastGradParams[k]
+        if not pastGradParam then
+          pastGradParam = torch.protoClone(gradParam, gradParam:size())
+          pastGradParam:copy(gradParam)
+          self._pastGradParams[k] = pastGradParam
+        else
+          pastGradParam:mul(self._optimState.momentum)
+          pastGradParam:add(1-self._optimState.damp, gradParam)
+        end
+        if self._optimState.nesterov then
+         gradParam:add(self._optimState.momentum, pastGradParam)
+        else
+         gradParam:copy(pastGradParam)
+        end
+      end
+      
+      -- learning rate decay
+      
+      -- gradient descent
+      param:add(-cur_learning_rate, gradParam)  
     end
-    --]]
-    for k, param in pairs(self._params) do
-      param:add(-self._optimState.learning_rate, self._gradParams[k])  
-    end
+    self._updateCounter = self._updateCounter + 1
   end
   
   function SGD:optimize(inputs,targets)
